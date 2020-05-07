@@ -239,6 +239,11 @@ if __name__ == '__main__':
     Database.insert(test_patient_two)
     Database.insert(test_patient_three)"""
     try:
-
+        m = tk.Tk()
+        m.geometry("500x200")
+        m.title = "Patient Queue and Storage for Doctors"
+        exit_button = tk.Button(m, text="Exit", command=m.destroy, width=16)
+        exit_button.grid(row=7, columnspan=2)
+        m.mainloop()
     except ValueError:
         print("This program has been closed due to a value error!")
