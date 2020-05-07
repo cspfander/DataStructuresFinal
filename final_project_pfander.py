@@ -13,6 +13,7 @@ class Patient:
     """
     This will hold all of the patients information.
     """
+
     def __init__(self, name: str, age: int, patient_id: int, priority: int) -> None:  # add more patient info
         self.left = None
         self.right = None
@@ -41,64 +42,60 @@ class Tree:  # look up patient, by patient_id (given at time of visit)
     """
     This class will store the patient in a tree to be accessed any any point.
     """
+
     def __init__(self) -> None:
         self.root = None
 
-    def insert(self, name: str, age: int, patient_id: int, priority: int) -> None:
+    def insert(self, patient) -> None:
         """
-        :param name: Patient's name
-        :param age: Patient's age
-        :param patient_id: Patient's ID
-        :param priority: Priority in which the patient is to be seen.
-        :return: This function won't return anything, but will actually insert the patient into the tree.
+        This function won't return anything, but will actually insert the patient into the tree.
         """
         if self.root is None:
-            self.root = Patient(name, age, patient_id, priority)
+            self.root = patient
         else:
-            self._insert(self.root, name, age, patient_id, priority)
+            self._insert(self.root, patient)
 
-    def _insert(self, current: object, name: str, age: int, patient_id: int, priority: int) -> None:
+    def _insert(self, current, patient) -> None:
         """
         Helper function for insert
         """
-        if patient_id > current.patient_id:
+        if patient.patient_id > current.patient_id:
             if current.left is None:
-                current.left = Patient(name, age, patient_id, priority)
+                current.left = patient
             else:
-                self._insert(current.left, name, age, patient_id, priority)
-        elif patient_id < current.patient_id:
+                self._insert(current.left, patient)
+        elif patient.patient_id < current.patient_id:
             if current.right is None:
-                current.right = Patient(name, age, patient_id, priority)
+                current.right = patient
             else:
-                self._insert(current.right, name, age, patient_id, priority)
+                self._insert(current.right, patient)
         else:
             print("Error could not compare Node.")
 
-    def find(self, patient_id):
+    def find(self, patient):
         """
-        :param patient_id: Using the patient's ID we can find their information
-        :return:
+        patient_id: Using the patient's ID we can find their information
         """
         if self.root is None:
             print("There are no patients yet.")
         else:
-            self._find(self.root, patient_id)
+            self._find(self.root, patient.patient_id)
 
-    def _find(self, current: object, patient_id):
+    def _find(self, current: object, patient):
         """
         Helper function for find
         """
-        if patient_id == current.patient_id:
+        if patient.patient_id == current.patient_id:
             print(current)
             return
         elif current.left is None and current.right is None:
-            print("No patient with ID: ", patient_id)
+            print("No patient with ID: ", patient.patient_id)
             return
-        if patient_id > current.patient_id and current.left:
-            self._find(current.left, patient_id)
+        if patient.patient_id > current.patient_id and current.left:
+            self._find(current.left, patient.patient_id)
             return
-        elif patient_id < current.patient_id and current.right:
-            self._find(current.right, patient_id)
+        elif patient.patient_id < current.patient_id and current.right:
+            self._find(current.right, patient.patient_id)
             return
 
 
@@ -106,6 +103,7 @@ class Queue:
     """
     This class will be responsible for actually creating the "line" or order in which the patients will be seen.
     """
+
     def __init__(self):
         self.front = None
         self.rear = None
@@ -119,34 +117,42 @@ class Queue:
             return True
         return False
 
-    def enqueue(self, name: str, age: int, patient_id: int, priority: int):
+    def enqueue(self, patient):
         """
         Enqueue will actually put the patient into queue into the correct spot.
         """
         if self.rear is None and self.front is None:
-            self.front = Patient(name, age, patient_id, priority)
+            self.front = patient
             self.rear = self.front
             self.size += 1
             return
         else:
-            self._enqueue(self.rear, name, age, patient_id, priority)
+            self._enqueue(self.rear, patient)
 
-    def _enqueue(self, current: object, name: str, age: int, patient_id: int, priority: int):
+    def _enqueue(self, current: object, patient):
         """
         Helper function for enqueue.
         """
-        if priority > current.priority:
+        if self.size == 1:
+            if patient.priority > current.priority:
+                current.next = current
+            # if greater, next = current
+            if patient.priority < current.priority:
+                current.previous = current
+            # if less, previous = current
+
+        if patient.priority > current.priority:
             if current.previous is None:
-                current.previous = Patient(name, age, patient_id, priority)
+                current.previous = patient
                 self.size += 1
             else:
-                self._enqueue(current.left, name, age, patient_id, priority)
-        elif priority < current.priority:
+                self._enqueue(current.left, patient)
+        elif patient.priority < current.priority:
             if current.next is None:
-                current.next = Patient(name, age, patient_id, priority)
+                current.next = patient
                 self.size += 1
             else:
-                self._enqueue(current.next, name, age, patient_id, priority)
+                self._enqueue(current.next, patient)
         else:
             print("Error: Patient couldn't be added to queue.")
 
@@ -200,6 +206,7 @@ class Database:
     """
     This class is responsible for inserting the patient into both the tree and queue.
     """
+
     def __init__(self):
         self.tree = Tree()
         self.queue = Queue()
@@ -208,6 +215,16 @@ class Database:
         """
         Insert will place the patient into the tree and queue.
         """
-        self.tree.insert(patient.name, patient.age, patient.patient_id, patient.priority)
-        self.queue.enqueue(patient.name, patient.age, patient.patient_id, patient.priority)
-        pass
+        self.tree.insert(patient)
+        self.queue.enqueue(patient)
+
+
+if __name__ == '__main__':
+    test_tree = Tree()
+    test_queue = Queue()
+    test_patient_one = Patient("Colten", 24, 1, 9)
+    test_patient_two = Patient("Tyler", 99, 2, 4)
+    test_patient_three = Patient("Luis", 23, 3, 15)
+    Database.insert(test_patient_one)
+    Database.insert(test_patient_two)
+    Database.insert(test_patient_three)
