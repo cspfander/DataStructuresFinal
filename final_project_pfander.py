@@ -13,7 +13,6 @@ class Patient:
     """
     This will hold all of the patients information.
     """
-
     def __init__(self, name: str, age: int, patient_id: int, priority: int) -> None:  # add more patient info
         self.left = None
         self.right = None
@@ -27,15 +26,6 @@ class Patient:
 
     def __str__(self):
         return f"Patient Info:\nName: {self.name}, Age: {self.age}, ID: {self.patient_id}, Priority: {self.priority}"
-
-    def print_bills(self):  # sorting bills by amount due
-        pass
-
-
-class Bills:
-    def __init__(self, amount):
-        self.amount = amount
-        pass
 
 
 class Tree:  # look up patient, by patient_id (given at time of visit)
@@ -135,7 +125,10 @@ class Queue:
         """
         if self.size == 1:
             if patient.priority > current.priority:
-                current.next = current
+                current.next = patient
+                self.front = current.next
+                self.rear = current.previous
+                self.size += 1
             # if greater, next = current
             if patient.priority < current.priority:
                 current.previous = current
