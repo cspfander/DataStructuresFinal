@@ -69,30 +69,6 @@ class Tree:
         else:
             return "Error could not compare Node."
 
-    def find(self, patient):
-        """
-        patient_id: Using the patient's ID we can find their information
-        """
-        if self.root is None:
-            return "There are no patients yet."
-        else:
-            self._find(self.root, patient.patient_id)
-
-    def _find(self, current: object, patient):
-        """
-        Helper function for find
-        """
-        if patient.patient_id == current.patient_id:
-            return current
-        elif current.left is None and current.right is None:
-            return f"No patient with ID: {patient.patient_id}"
-        if patient.patient_id > current.patient_id and current.left:
-            self._find(current.left, patient.patient_id)
-            return
-        elif patient.patient_id < current.patient_id and current.right:
-            self._find(current.right, patient.patient_id)
-            return
-
     def bfs(self):
         queue = [self.root]
         temp_list = []
@@ -217,17 +193,6 @@ class Database:
         """
         self.tree.insert(patient)
         self.queue.enqueue(patient)
-
-
-def sort_patients(arr):
-    for i in range(1, len(arr)):
-        key = arr[i]
-        j = i - 1
-        while j >= 0 and key < arr[j]:
-            arr[j + 1] = arr[j]
-            j -= 1
-        arr[j + 1] = key
-    return arr
 
 
 def create_patient():
