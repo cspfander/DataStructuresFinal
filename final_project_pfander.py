@@ -10,7 +10,7 @@ as place them in a proper queue based on their symptoms.
 import tkinter as tk
 import tkinter.font as tkFont
 
-patients_seen_today = []
+patients_seen_today = {}
 
 
 class Patient:
@@ -32,7 +32,7 @@ class Patient:
         return f"Patient Info:\nName: {self.name}, Age: {self.age}, ID: {self.patient_id}, Priority: {self.priority}"
 
     def add_patient(self):
-        patients_seen_today.append(self.name + ", " + str(self.patient_id))
+        patients_seen_today.update({self.name: self.priority})
 
 
 class Tree:  # look up patient, by patient_id (given at time of visit)
@@ -93,6 +93,17 @@ class Tree:  # look up patient, by patient_id (given at time of visit)
             self._find(current.right, patient.patient_id)
             return
 
+    def bfs(self):
+        queue = [self.root]
+        while len(queue) > 0:
+            print(queue[0])
+            temp = queue.pop(0)
+            if temp.right is not None:
+                queue.append(temp.right)
+
+            if temp.left is not None:
+                queue.append(temp.left)
+
 
 class Queue:
     """
@@ -141,14 +152,21 @@ class Queue:
                 self.size += 1
         if patient.priority > current.priority:
             if current.previous is None:
-                current.previous = current
-                current
+                after_current = current.next
+                current.next = patient
+                patient.next = after_current
+                after_current.previous = patient
+                patient.previous = current
                 self.size += 1
             else:
                 self._enqueue(current.next, patient)
         elif patient.priority < current.priority:
             if current.next is None:
-                current.next = patient
+                before_current = current.previous
+                current.previous = patient
+                patient.previous = before_current
+                before_current.next = patient
+                patient.next = current
                 self.size += 1
             else:
                 self._enqueue(current.next, patient)
@@ -177,7 +195,7 @@ class Queue:
         This function will show all of the current patients in line.
         """
         if self.is_empty():
-            return "There are currently no patients." and False
+            return "There are currently no patients."  # and False
         self._print_queue(self.front)
         return
 
@@ -197,7 +215,7 @@ class Queue:
         if self.is_empty():
             return "There are currently no patients."
         else:
-            return f"The next patient to be seen is {self.front.name}"
+            return f"{self.front.name}"
 
 
 class Database:
@@ -225,7 +243,7 @@ def sort_patients_seen_today(arr):
             arr[j + 1] = arr[j]
             j -= 1
         arr[j + 1] = key
-    print(arr)
+    return arr
 
 
 def create_patient():
@@ -236,22 +254,26 @@ def create_patient():
         temp_id = 1
     else:
         temp_id = len(patients_seen_today) + 1
-    patient = Patient(temp_name, temp_age, temp_priority, temp_id)
-    patient.add_patient()
-    Database.insert(new_database, patient)
-    new_database_queue.peek()
-    patient_name.delete(0)
-    patient_age.delete(0)
-    patient_priority.delete(0)
-    patient_name.focus()
+    patient = Patient(temp_name, temp_age, temp_id, temp_priority)
     print(patient)
+    patient.add_patient()
+    print(patients_seen_today)
+    new_database.insert(patient)
+    print(new_database.queue.print_queue())
+    patient_name.delete(0, 100)
+    patient_age.delete(0, 100)
+    patient_priority.delete(0, 100)
+    patient_name.focus()
+
+
+def remove_patient():
+    new_database.queue.de_queue()
+    current_patient_label_show.configure()
 
 
 if __name__ == '__main__':
     try:
         new_database = Database()
-        new_database_tree = Tree()
-        new_database_queue = Queue()
         m = tk.Tk()
         m.geometry("500x300")
         m.title("Patient Queue and Storage for Doctors")
@@ -280,7 +302,7 @@ if __name__ == '__main__':
         font_style_two = tkFont.Font(family="TkDefaultFont", size=16)
         current_patient_label = tk.Label(m, text="NEXT PATIENT: ", font=font_style_two)
         current_patient_label.place(x=15, y=10)
-        current_patient_label_show = tk.Label(m, text=new_database_queue.peek(), font=font_style_two)
+        current_patient_label_show = tk.Label(m, text=new_database.queue.peek(), font=font_style_two)
         current_patient_label_show.place(x=175, y=10)
         create_patient_button = tk.Button(m, text="Enter", command=lambda: create_patient(), width=14)
         create_patient_button.place(x=350, y=200)
