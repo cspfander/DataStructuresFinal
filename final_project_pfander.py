@@ -8,6 +8,7 @@ The purpose of this program is to create a program that will help doctors and nu
 as place them in a proper queue based on their symptoms.
 """
 import tkinter as tk
+import tkinter.font as tkFont
 
 patients_seen_today = []
 
@@ -240,10 +241,33 @@ if __name__ == '__main__':
     Database.insert(test_patient_three)"""
     try:
         m = tk.Tk()
-        m.geometry("500x200")
-        m.title = "Patient Queue and Storage for Doctors"
+        m.geometry("500x300")
+        m.title("Patient Queue and Storage for Doctors")
+        patient_name = tk.Entry(m)
+        patient_name.place(x=350, y=125)
+        patient_name_label = tk.Label(m, text="Patients Name:")
+        patient_name_label.place(x=250, y=125)
+        patient_age = tk.Entry(m)
+        patient_age.place(x=350, y=150)
+        patient_age_label = tk.Label(m, text="Patients Age:")
+        patient_age_label.place(x=250, y=150)
+        patient_priority = tk.Entry(m)
+        patient_priority.place(x=350, y=175)
+        patient_priority_label = tk.Label(m, text="Patients Priority:")
+        patient_priority_label.place(x=250, y=175)
+        font_style = tkFont.Font(family="TkDefaultFont", size=8)
+        patient_priority_legend = tk.Label(m, text="Add patient symptoms for total priority:\n"
+                                                   "Cough = 1\nSneeze = 1\nHeadache = 2 - 4 based on severity\nPain = 2"
+                                                   " - 8 depends on severity/location\nRespiratory / Short of breath = "
+                                                   "4\nDiarrhea = 5\nFever = 7", font=font_style)
+        patient_priority_legend.place(x=15, y=125)
+        font_style_two = tkFont.Font(family="TkDefaultFont", size=16)
+        current_patient_label = tk.Label(m, text="NEXT PATIENT: ", font=font_style_two)
+        current_patient_label.place(x=50, y=10)
+        create_patient_button = tk.Button(m, text="Enter", command=Patient.add_patient, width=14)
+        create_patient_button.place(x=350, y=200)
         exit_button = tk.Button(m, text="Exit", command=m.destroy, width=16)
-        exit_button.grid(row=7, columnspan=2)
+        exit_button.place(x=200, y=270)
         m.mainloop()
     except ValueError:
         print("This program has been closed due to a value error!")
