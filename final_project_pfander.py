@@ -132,22 +132,20 @@ class Queue:
             if patient.priority > current.priority:
                 current.next = patient
                 self.front = current.next
-                self.rear = current.previous
+                self.rear = current
                 self.size += 1
-            # if greater, next = current
             if patient.priority < current.priority:
-                current.previous = patient
-                self.front = current
+                current.next = self.front
+                self.front.previous = current.next
                 self.rear = current.previous
                 self.size += 1
-            # if less, previous = current
-
         if patient.priority > current.priority:
             if current.previous is None:
-                current.previous = patient
+                current.previous = current
+                current
                 self.size += 1
             else:
-                self._enqueue(current.left, patient)
+                self._enqueue(current.next, patient)
         elif patient.priority < current.priority:
             if current.next is None:
                 current.next = patient
@@ -230,44 +228,65 @@ def sort_patients_seen_today(arr):
     print(arr)
 
 
+def create_patient():
+    temp_name = patient_name.get()
+    temp_age = patient_age.get()
+    temp_priority = patient_priority.get()
+    if len(patients_seen_today) == 0:
+        temp_id = 1
+    else:
+        temp_id = len(patients_seen_today) + 1
+    patient = Patient(temp_name, temp_age, temp_priority, temp_id)
+    patient.add_patient()
+    Database.insert(new_database, patient)
+    new_database_queue.peek()
+    patient_name.delete(0)
+    patient_age.delete(0)
+    patient_priority.delete(0)
+    patient_name.focus()
+    print(patient)
+
+
 if __name__ == '__main__':
-    """test_tree = Tree()
-    test_queue = Queue()
-    test_patient_one = Patient("Colten", 24, 1, 9)
-    test_patient_two = Patient("Tyler", 99, 2, 4)
-    test_patient_three = Patient("Luis", 23, 3, 15)
-    Database.insert(test_patient_one)
-    Database.insert(test_patient_two)
-    Database.insert(test_patient_three)"""
     try:
+        new_database = Database()
+        new_database_tree = Tree()
+        new_database_queue = Queue()
         m = tk.Tk()
         m.geometry("500x300")
         m.title("Patient Queue and Storage for Doctors")
         patient_name = tk.Entry(m)
         patient_name.place(x=350, y=125)
+        patient_name.focus()
+        patient_name.bind("<Return>", lambda function1: patient_age.focus())
         patient_name_label = tk.Label(m, text="Patients Name:")
         patient_name_label.place(x=250, y=125)
         patient_age = tk.Entry(m)
         patient_age.place(x=350, y=150)
+        patient_age.bind("<Return>", lambda function1: patient_priority.focus())
         patient_age_label = tk.Label(m, text="Patients Age:")
         patient_age_label.place(x=250, y=150)
         patient_priority = tk.Entry(m)
         patient_priority.place(x=350, y=175)
+        patient_priority.bind("<Return>", lambda function1: create_patient())
         patient_priority_label = tk.Label(m, text="Patients Priority:")
         patient_priority_label.place(x=250, y=175)
         font_style = tkFont.Font(family="TkDefaultFont", size=8)
         patient_priority_legend = tk.Label(m, text="Add patient symptoms for total priority:\n"
                                                    "Cough = 1\nSneeze = 1\nHeadache = 2 - 4 based on severity\nPain = 2"
                                                    " - 8 depends on severity/location\nRespiratory / Short of breath = "
-                                                   "4\nDiarrhea = 5\nFever = 7", font=font_style)
+                                                   "4\nDiarrhea = 5\nBroken bones = 5 - 10\nFever = 7", font=font_style)
         patient_priority_legend.place(x=15, y=125)
         font_style_two = tkFont.Font(family="TkDefaultFont", size=16)
         current_patient_label = tk.Label(m, text="NEXT PATIENT: ", font=font_style_two)
-        current_patient_label.place(x=50, y=10)
-        create_patient_button = tk.Button(m, text="Enter", command=Patient.add_patient, width=14)
+        current_patient_label.place(x=15, y=10)
+        current_patient_label_show = tk.Label(m, text=new_database_queue.peek(), font=font_style_two)
+        current_patient_label_show.place(x=175, y=10)
+        create_patient_button = tk.Button(m, text="Enter", command=lambda: create_patient(), width=14)
         create_patient_button.place(x=350, y=200)
         exit_button = tk.Button(m, text="Exit", command=m.destroy, width=16)
         exit_button.place(x=200, y=270)
+        m.bind('<Escape>', lambda event=None: exit_button.invoke())
         m.mainloop()
     except ValueError:
         print("This program has been closed due to a value error!")
