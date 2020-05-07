@@ -7,18 +7,21 @@ Date last modified: 05/7/20
 The purpose of this program is to create a program that will help doctors and nurses easily store patients' info as well
 as place them in a proper queue based on their symptoms.
 """
+import tkinter as tk
+
+patients_seen_today = []
 
 
 class Patient:
     """
     This will hold all of the patients information.
     """
+
     def __init__(self, name: str, age: int, patient_id: int, priority: int) -> None:  # add more patient info
         self.left = None
         self.right = None
         self.next = None
         self.previous = None
-        self.bills = []
         self.name = name
         self.age = age
         self.patient_id = patient_id
@@ -26,6 +29,9 @@ class Patient:
 
     def __str__(self):
         return f"Patient Info:\nName: {self.name}, Age: {self.age}, ID: {self.patient_id}, Priority: {self.priority}"
+
+    def add_patient(self):
+        patients_seen_today.append(self.name + ", " + str(self.patient_id))
 
 
 class Tree:  # look up patient, by patient_id (given at time of visit)
@@ -45,7 +51,7 @@ class Tree:  # look up patient, by patient_id (given at time of visit)
         else:
             self._insert(self.root, patient)
 
-    def _insert(self, current, patient) -> None:
+    def _insert(self, current, patient):
         """
         Helper function for insert
         """
@@ -60,14 +66,14 @@ class Tree:  # look up patient, by patient_id (given at time of visit)
             else:
                 self._insert(current.right, patient)
         else:
-            print("Error could not compare Node.")
+            return "Error could not compare Node."
 
     def find(self, patient):
         """
         patient_id: Using the patient's ID we can find their information
         """
         if self.root is None:
-            print("There are no patients yet.")
+            return "There are no patients yet."
         else:
             self._find(self.root, patient.patient_id)
 
@@ -76,11 +82,9 @@ class Tree:  # look up patient, by patient_id (given at time of visit)
         Helper function for find
         """
         if patient.patient_id == current.patient_id:
-            print(current)
-            return
+            return current
         elif current.left is None and current.right is None:
-            print("No patient with ID: ", patient.patient_id)
-            return
+            return f"No patient with ID: {patient.patient_id}"
         if patient.patient_id > current.patient_id and current.left:
             self._find(current.left, patient.patient_id)
             return
@@ -131,7 +135,10 @@ class Queue:
                 self.size += 1
             # if greater, next = current
             if patient.priority < current.priority:
-                current.previous = current
+                current.previous = patient
+                self.front = current
+                self.rear = current.previous
+                self.size += 1
             # if less, previous = current
 
         if patient.priority > current.priority:
@@ -147,7 +154,7 @@ class Queue:
             else:
                 self._enqueue(current.next, patient)
         else:
-            print("Error: Patient couldn't be added to queue.")
+            return "Error: Patient couldn't be added to queue."
 
     def de_queue(self):
         """
@@ -171,8 +178,7 @@ class Queue:
         This function will show all of the current patients in line.
         """
         if self.is_empty():
-            print("There are currently no patients.")
-            return False
+            return "There are currently no patients." and False
         self._print_queue(self.front)
         return
 
@@ -212,12 +218,27 @@ class Database:
         self.queue.enqueue(patient)
 
 
+def sort_patients_seen_today(arr):
+    for i in range(1, len(arr)):
+        key = arr[i]
+        j = i - 1
+        while j >= 0 and key < arr[j]:
+            arr[j + 1] = arr[j]
+            j -= 1
+        arr[j + 1] = key
+    print(arr)
+
+
 if __name__ == '__main__':
-    test_tree = Tree()
+    """test_tree = Tree()
     test_queue = Queue()
     test_patient_one = Patient("Colten", 24, 1, 9)
     test_patient_two = Patient("Tyler", 99, 2, 4)
     test_patient_three = Patient("Luis", 23, 3, 15)
     Database.insert(test_patient_one)
     Database.insert(test_patient_two)
-    Database.insert(test_patient_three)
+    Database.insert(test_patient_three)"""
+    try:
+
+    except ValueError:
+        print("This program has been closed due to a value error!")
