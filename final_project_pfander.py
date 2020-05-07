@@ -29,7 +29,7 @@ class Patient:
         self.priority = priority
 
     def __str__(self):
-        return f"Patient Info:\nName: {self.name}, Age: {self.age}, ID: {self.patient_id}, Priority: {self.priority}"
+        return f"Name: {self.name}, Age: {self.age}, ID: {self.patient_id}, Priority: {self.priority}\n"
 
     def add_patient(self):
         patients_visited_today.update({self.name: self.priority})
@@ -95,14 +95,16 @@ class Tree:
 
     def bfs(self):
         queue = [self.root]
+        temp_list = []
         while len(queue) > 0:
-            print(queue[0])
+            temp_list.append(queue[0])
             temp = queue.pop(0)
             if temp.right is not None:
                 queue.append(temp.right)
 
             if temp.left is not None:
                 queue.append(temp.left)
+        return temp_list
 
 
 class Queue:
@@ -154,7 +156,6 @@ class Queue:
             if current.previous is None:
                 after_current = current.next
                 current.next = patient
-                self.rear = patient.previous
                 patient.next = after_current
                 after_current.previous = patient
                 patient.previous = current
@@ -165,7 +166,6 @@ class Queue:
             if current.next is None:
                 before_current = current.previous
                 current.previous = patient
-                self.front = patient.next
                 patient.previous = before_current
                 before_current.next = patient
                 patient.next = current
@@ -219,7 +219,7 @@ class Database:
         self.queue.enqueue(patient)
 
 
-def sort_patients_seen_today(arr):
+def sort_patients(arr):
     for i in range(1, len(arr)):
         key = arr[i]
         j = i - 1
@@ -240,7 +240,7 @@ def create_patient():
         temp_id = len(patients_visited_today) + 1
     patient = Patient(temp_name, temp_age, temp_id, int(temp_priority))
     patient.add_patient()
-    print(patients_visited_today)
+    patients_visited_show.configure(text=patients_visited_today)
     temp_patient = new_database.queue.peek()
     new_database.insert(patient)
     new_temp_patient = new_database.queue.peek()
@@ -248,7 +248,6 @@ def create_patient():
         current_patient_label_show.configure(text=new_database.queue.peek())
     if new_database.queue.size == 1:
         current_patient_label_show.configure(text=new_database.queue.peek())
-    print(new_database.queue.peek())
     patient_name.delete(0, 100)
     patient_age.delete(0, 100)
     patient_priority.delete(0, 100)
@@ -257,14 +256,24 @@ def create_patient():
 
 def remove_patient():
     new_database.queue.de_queue()
-    current_patient_label_show.configure()
+    current_patient_label_show.configure(text=new_database.queue.peek())
+
+
+def sort_patients_visited():
+    sorted_patients = sorted(patients_visited_today.items(), key=lambda x: x[1], reverse=True)
+    patients_visited_show.configure(text=sorted_patients)
+
+
+def patient_look_up():
+    patient_info = new_database.tree.bfs()
+    patient_look_up_info.configure(text=patient_info)
 
 
 if __name__ == '__main__':
     try:
         new_database = Database()
         m = tk.Tk()
-        m.geometry("500x300")
+        m.geometry("800x300")
         m.title("Patient Queue and Storage for Doctors")
         patient_name = tk.Entry(m)
         patient_name.place(x=350, y=125)
@@ -283,7 +292,7 @@ if __name__ == '__main__':
         patient_priority_label = tk.Label(m, text="Patients Priority:")
         patient_priority_label.place(x=250, y=175)
         font_style = tkFont.Font(family="TkDefaultFont", size=8)
-        patient_priority_legend = tk.Label(m, text="Add patient symptoms for total priority:\n"
+        patient_priority_legend = tk.Label(m, text="*LEGEND*\nAdd patient symptoms for total priority:\n"
                                                    "Cough = 1\nSneeze = 1\nHeadache = 2 - 4 based on severity\nPain = 2"
                                                    " - 8 depends on severity/location\nRespiratory / Short of breath = "
                                                    "4\nNausea = 4\nDiarrhea = 5\nBroken bones = 5 - 10\nVomitting = 6\n"
@@ -294,8 +303,20 @@ if __name__ == '__main__':
         current_patient_label.place(x=15, y=10)
         current_patient_label_show = tk.Label(m, text=new_database.queue.peek(), font=font_style_two)
         current_patient_label_show.place(x=175, y=10)
-        create_patient_button = tk.Button(m, text="Enter", command=lambda: create_patient(), width=14)
+        create_patient_button = tk.Button(m, text="Enter", command=lambda: create_patient(), width=16)
         create_patient_button.place(x=350, y=200)
+        next_patient_button = tk.Button(m, text="Deque Patient", command=lambda: remove_patient(), width=16)
+        next_patient_button.place(x=350, y=225)
+        patients_visited_label = tk.Label(m, text="Patients signed in today:")
+        patients_visited_label.place(x=15, y=50)
+        patients_visited_show = tk.Label(m, text=patients_visited_today)
+        patients_visited_show.place(x=150, y=50)
+        sort_patients_button = tk.Button(m, text="Sort by Priority", command=lambda: sort_patients_visited(), width=16)
+        sort_patients_button.place(x=350, y=250)
+        patient_look_up_button = tk.Button(m, text="Show Patients' Info", command=lambda: patient_look_up(), width=16)
+        patient_look_up_button.place(x=15, y=75)
+        patient_look_up_info = tk.Label(m, text="")
+        patient_look_up_info.place(x=500, y=75)
         exit_button = tk.Button(m, text="Exit", command=m.destroy, width=16)
         exit_button.place(x=200, y=270)
         m.bind('<Escape>', lambda event=None: exit_button.invoke())
