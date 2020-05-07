@@ -10,7 +10,7 @@ as place them in a proper queue based on their symptoms.
 import tkinter as tk
 import tkinter.font as tkFont
 
-patients_seen_today = {}
+patients_visited_today = {}
 
 
 class Patient:
@@ -18,7 +18,7 @@ class Patient:
     This will hold all of the patients information.
     """
 
-    def __init__(self, name: str, age: int, patient_id: int, priority: int) -> None:  # add more patient info
+    def __init__(self, name: str, age: int, patient_id: int, priority: int) -> None:
         self.left = None
         self.right = None
         self.next = None
@@ -32,10 +32,10 @@ class Patient:
         return f"Patient Info:\nName: {self.name}, Age: {self.age}, ID: {self.patient_id}, Priority: {self.priority}"
 
     def add_patient(self):
-        patients_seen_today.update({self.name: self.priority})
+        patients_visited_today.update({self.name: self.priority})
 
 
-class Tree:  # look up patient, by patient_id (given at time of visit)
+class Tree:
     """
     This class will store the patient in a tree to be accessed any any point.
     """
@@ -150,10 +150,11 @@ class Queue:
                 self.front.previous = current.next
                 self.rear = current.previous
                 self.size += 1
-        if patient.priority > current.priority:
+        elif patient.priority > current.priority:
             if current.previous is None:
                 after_current = current.next
                 current.next = patient
+                self.rear = patient.previous
                 patient.next = after_current
                 after_current.previous = patient
                 patient.previous = current
@@ -164,6 +165,7 @@ class Queue:
             if current.next is None:
                 before_current = current.previous
                 current.previous = patient
+                self.front = patient.next
                 patient.previous = before_current
                 before_current.next = patient
                 patient.next = current
@@ -189,24 +191,6 @@ class Queue:
             self.rear = None
             self.size -= 1
         return temp
-
-    def print_queue(self):
-        """
-        This function will show all of the current patients in line.
-        """
-        if self.is_empty():
-            return "There are currently no patients."  # and False
-        self._print_queue(self.front)
-        return
-
-    def _print_queue(self, node):
-        """
-        Helper function for print_queue
-        """
-        print(node)
-        if node.next is not None:
-            self._print_queue(node.next)
-        return
 
     def peek(self):
         """
@@ -249,17 +233,22 @@ def sort_patients_seen_today(arr):
 def create_patient():
     temp_name = patient_name.get()
     temp_age = patient_age.get()
-    temp_priority = patient_priority.get()
-    if len(patients_seen_today) == 0:
+    temp_priority = int(patient_priority.get())
+    if len(patients_visited_today) == 0:
         temp_id = 1
     else:
-        temp_id = len(patients_seen_today) + 1
-    patient = Patient(temp_name, temp_age, temp_id, temp_priority)
-    print(patient)
+        temp_id = len(patients_visited_today) + 1
+    patient = Patient(temp_name, temp_age, temp_id, int(temp_priority))
     patient.add_patient()
-    print(patients_seen_today)
+    print(patients_visited_today)
+    temp_patient = new_database.queue.peek()
     new_database.insert(patient)
-    print(new_database.queue.print_queue())
+    new_temp_patient = new_database.queue.peek()
+    if temp_patient != new_temp_patient:
+        current_patient_label_show.configure(text=new_database.queue.peek())
+    if new_database.queue.size == 1:
+        current_patient_label_show.configure(text=new_database.queue.peek())
+    print(new_database.queue.peek())
     patient_name.delete(0, 100)
     patient_age.delete(0, 100)
     patient_priority.delete(0, 100)
@@ -297,7 +286,8 @@ if __name__ == '__main__':
         patient_priority_legend = tk.Label(m, text="Add patient symptoms for total priority:\n"
                                                    "Cough = 1\nSneeze = 1\nHeadache = 2 - 4 based on severity\nPain = 2"
                                                    " - 8 depends on severity/location\nRespiratory / Short of breath = "
-                                                   "4\nDiarrhea = 5\nBroken bones = 5 - 10\nFever = 7", font=font_style)
+                                                   "4\nNausea = 4\nDiarrhea = 5\nBroken bones = 5 - 10\nVomitting = 6\n"
+                                                   "Fever = 7", font=font_style)
         patient_priority_legend.place(x=15, y=125)
         font_style_two = tkFont.Font(family="TkDefaultFont", size=16)
         current_patient_label = tk.Label(m, text="NEXT PATIENT: ", font=font_style_two)
